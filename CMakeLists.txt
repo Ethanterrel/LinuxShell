@@ -3,4 +3,4 @@ project(LinuxShell C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(LinuxShell main.c)
+add_executable(LinuxShell shell.c)
