@@ -136,25 +136,46 @@ void parse(char *line, command *cmd){
 
         switch (buffer[0]){
             case '>':
-                if (buffer[1] == '>'){ cmd->out1 = i;
+                if (buffer[0] == '>'){
+                    cmd->out1 = i;
+                    if (buffer[1] != '\0'){ cmd->builtin = -1;
+                    }
                 }
-                else{cmd->out = i;
+                else{
+                    cmd->out = i;
+                    if (buffer[2] != '\0'){ cmd->builtin = -1;
+                    }
                 }
                 break;
-            case '<':cmd->in = i-1;
+            case '<':
+                cmd->in = i;
+                if (buffer[1] != '\0'){ cmd->builtin = -1;
+                    return;
+                }
                 break;
-            case '|':cmd->pipe = i;
-                break;
-            case '&':cmd->backexec = 1;
-                break;case '\t':
-                break;case '\n':
-                break;
-            default:strcpy(cmd->args[i++], buffer);
+            case '|':
+                cmd->pipe++;
+                strncpy(cmd->args[i++], buffer, 50);
                 cmd->argcount++;
+                if (buffer[1] != '\0'){ cmd->builtin = -1;
+                    return;
+                }
+                break;
+            case '&':
+                cmd->backexec = 1;
+                if (buffer[1] != '\0'){ cmd->builtin = -1;
+                    return;
+                }
+                break;case '\t':
+                break; case '\n':
+                break;
+            default:
+                strncpy(cmd->args[i++], buffer, 50); cmd->argcount++;
         }
     }
     free(buffer);
 }
+
 void handlebuiltin(command cmd){
 
     if (strcmp(cmd.args[0], CD) == 0){
@@ -311,6 +332,7 @@ void environ(command cmd){
 void changepath(command cmd){
     if (cmd.argcount == 0){
         strcpy(path[0], "\0");
+        strcpy(path[1], "\0");
         return;
     }
 
@@ -408,5 +430,66 @@ void pauseshell(command cmd){
     } while (i);
 }
 
+void handlepipe(char args[50][50], int argc, int n){
 
-v
+    char arguments[n+1][50][50];
+
+    int i = 0, j = 0, k = 0; index = 0;
+    while (index <= argc){
+        if (strcmp("|", args[i]) == 0){
+        if (strcmp("\0", args[i+1]) == 0){
+           error(); return;
+            }
+            i++; j++; k = 0;
+        }
+        else{
+            strncpy(arguments[j][k], args[i], 50);
+            i++; k++;
+        }
+        index++;
+    }
+    i = 0;int nextread;pid_t pid;int fd[2];
+    pipe(fd); pid = fork();
+
+    if (pid == -1){
+        error();
+        return;
+    }
+
+    if (pid == 0){
+        close(1);
+        if (dup2(fd[1], 1) == -1){
+            error();
+            return;
+        }
+        close(fd[0]); close(fd[1]);
+        if (execv(arguments[0][0], NULL) == -1){
+            error();exit(1);
+        }
+    }
+
+    while (i < n){
+        nextread = fd[0];
+        pipe(fd); pid = fork();
+
+        if (pid == -1){
+            error(); return;
+        }
+        if (pid == 0){
+            close(0);
+            if (dup2(nextread, 0) == -1){
+                error(); return;
+            }
+            close(fd[0]);
+
+            if (dup2(fd[1], 1) == -1){
+                error(); return;
+            }
+            close(fd[1]);
+
+            if (execv(arguments[i][0], NULL) == -1){
+                error(); exit(1);
+            }
+        }
+        i++;
+    }
