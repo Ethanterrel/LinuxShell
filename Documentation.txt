@@ -35,9 +35,6 @@ When help is called -
 -> displays readme
   This program is a simple command line shell that executes commands read from the standard input or from a file...
 
-
-
-
 When clr is called -
 Clears shell
 
