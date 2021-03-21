@@ -1,0 +1,46 @@
+
+The implementation of myshell code works as following:
+
+When CD is called -  /home/TU/tuk32865
+
+When Environ is called -
+PWD=/home/TU/tuk32865
+USER=tuk32865
+HOME=/home/TU/tuk32865
+
+When dir is called -
+.bash_logout
+.profile
+examples.desktop
+.cache
+Desktop
+Downloads
+Templates
+Public
+Documents
+Music
+Pictures
+Videos
+
+When echo is called -
+ echo hello
+ -> hello
+
+When path is called -
+-> change directory
+path /bin
+environ PATH=/bin
+
+When help is called -
+-> displays readme
+  This program is a simple command line shell that executes commands read from the standard input or from a file...
+
+
+
+
+When clr is called -
+Clears shell
+
+When pause is called -
+press enter to continue
+
